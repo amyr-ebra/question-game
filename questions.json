@@ -1,0 +1,22 @@
+[
+    {
+        "question" : "What is the capital of Japan?",
+        "options" : [
+            "Paris",
+            "London",
+            "Berlin",
+            "Madrid"
+        ],
+        "correct" : "A"
+    },
+    {
+        "question" : "What is the capital of French?",
+        "options" : [
+            "Paris",
+            "London",
+            "Berlin",
+            "Madrid"
+        ],
+        "correct" : "B"
+    }
+]

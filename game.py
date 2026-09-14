@@ -1,13 +1,36 @@
-from rich.console import Console  # pyright: ignore[reportMissingImports]
+from rich.console import Console
+from engine import Question, Match
+
 
 console = Console()
 
+
 questions = [
-    ("پایتخت ژاپن کدام است؟", ["توکیو", "کیوتو", "اوساکا", "سئول"], "A"),
-    ("خروجی len('سلام') چیست؟", ["3", "4", "5", "خطا"], "B"),
-    ("بزرگ‌ترین سیاره‌ی منظومه‌ی شمسی؟", ["زمین", "زحل", "مشتری", "نپتون"], "C"),
-    ("نماد شیمیایی طلا چیست؟", ["Ag", "Au", "Fe", "Gd"], "B"),
-    ("شاهنامه اثر کیست؟", ["حافظ", "سعدی", "فردوسی", "مولوی"], "C"),
+    Question(
+        "پایتخت ژاپن کدام است؟",
+        ["توکیو", "کیوتو", "اوساکا", "سئول"],
+        "A"
+    ),
+    Question(
+        "خروجی len('سلام') چیست؟",
+        ["3", "4", "5", "خطا"],
+        "B"
+    ),
+    Question(
+        "بزرگ‌ترین سیاره‌ی منظومه‌ی شمسی؟",
+        ["زمین", "زحل", "مشتری", "نپتون"],
+        "C"
+    ),
+    Question(
+        "نماد شیمیایی طلا چیست؟",
+        ["Ag", "Au", "Fe", "Gd"],
+        "B"
+    ),
+    Question(
+        "شاهنامه اثر کیست؟",
+        ["حافظ", "سعدی", "فردوسی", "مولوی"],
+        "C"
+    ),
 ]
 
 
@@ -18,39 +41,82 @@ def show_menu():
 
 
 def play():
-    total = len(questions)
-    score = 0
-    correct_count = 0
+    player1 = input("نام بازیکن اول: ").strip()
+    player2 = input("نام بازیکن دوم: ").strip()
 
-    for i, (text, options, correct) in enumerate(questions, start=1):
-        console.print(f"\nسؤال {i} از {total}:", style="bold cyan")
-        console.print(text, style="bold")
-        for letter, opt in zip("ABCD", options):
-            console.print(f"  {letter}) {opt}", style="bold")
+    try:
+        match = Match(player1, player2, questions)
+    except ValueError as e:
+        console.print(f"خطا: {e}", style="bold red")
+        return
 
-        answer = input("جواب تو (A-D): ").strip().upper()
+    while not match.is_over():
+        question = match.start_round()
 
-        if answer == correct:
-            console.print(" درست!", style="bold green")
-            score += 10
-            correct_count += 1
-        else:
-            console.print(f" غلط! جواب درست: {correct}", style="bold red")
+        console.print(
+            f"\nسؤال {match.round} از {len(questions)}:",
+            style="bold cyan"
+        )
 
-    percent = correct_count / total * 100
+        console.print(question.text, style="bold")
+
+        for letter, option in zip("ABCD", question.options):
+            console.print(f"  {letter}) {option}", style="bold")
+
+        answer1 = input(f"{player1}، جواب تو (A-D): ").strip().upper()
+        match.submit(player1, answer1, 0)
+
+        answer2 = input(f"{player2}، جواب تو (A-D): ").strip().upper()
+        match.submit(player2, answer2, 0)
+
+        match.resolve_round()
+
+        console.print("\nامتیاز فعلی:", style="bold yellow")
+        console.print(
+            f"  {player1}: {match.scores[player1]}",
+            style="bold green"
+        )
+        console.print(
+            f"  {player2}: {match.scores[player2]}",
+            style="bold green"
+        )
+
+    winner = match.winner()
+
     console.print("\nبازی تمام شد!", style="bold yellow")
-    console.print(f"   امتیاز تو: {score}", style="bold green")
-    console.print(f"   درست: {correct_count} از {total}  ({percent:.0f}٪)", style="bold")
+
+    if winner is None:
+        console.print("نتیجه: مساوی!", style="bold cyan")
+    else:
+        console.print(
+            f"برنده: {winner}",
+            style="bold green"
+        )
+
+    console.print(
+        f"{player1}: {match.scores[player1]}",
+        style="bold"
+    )
+    console.print(
+        f"{player2}: {match.scores[player2]}",
+        style="bold"
+    )
 
 
 while True:
     show_menu()
+
     choice = input("انتخاب تو (۱ یا ۲): ").strip()
 
     if choice in ("1", "۱"):
         play()
+
     elif choice in ("2", "۲"):
         console.print("خداحافظ!", style="bold cyan")
         break
+
     else:
-        console.print(" فقط ۱ یا ۲ را وارد کن.", style="bold yellow")
+        console.print(
+            "فقط ۱ یا ۲ را وارد کن.",
+            style="bold yellow"
+        )
